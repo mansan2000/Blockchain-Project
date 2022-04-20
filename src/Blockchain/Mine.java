@@ -8,15 +8,17 @@ import java.util.Locale;
 import java.util.Scanner;
 
 public class Mine {
-    private String previousHash, timeStamp, hash, data;
+//    private String previousHash;
+    private String hash;
+    private String data;
     private long comparableValueOfHash;
     private int nonce;
-    public Mine(String previousHash, String data){
+    public Mine( String data){
 //        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date = new Date();
-        this.timeStamp= String.valueOf(date);
+        String timeStamp = String.valueOf(date);
         this.data=data;
-        this.previousHash=previousHash;
+//        this.previousHash=previousHash;
         this.nonce =0;
         this.hash="";
 
@@ -25,7 +27,8 @@ public class Mine {
         String result = null;
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            String contents = this.data+this.nonce;
+//            System.out.println("mine stuff: "+this.previousHash+" "+this.data+" "+this.nonce);
+            String contents = Chain.getPreviousHash()+this.data+this.nonce;
             byte[] hash = digest.digest(contents.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             for (byte b : hash) {
@@ -49,7 +52,7 @@ public class Mine {
         BigInteger baseTwo = new BigInteger("2");
 
 //      Exponent that sets the difficulty of mining
-        int exponent = 254;
+        int exponent = 240;
 
 //      Number value of hash so that it can be mathematically compared
         BigInteger hashValue = new BigInteger(hash,16);
@@ -64,22 +67,23 @@ public class Mine {
             createHash();
             hashValue = new BigInteger(hash,16);
             comparableValueOfHash = hash.hashCode();
-            System.out.println(hash);
+//            System.out.println(hash);
         }
 
 //        Block y = new Block("this","that","thaitah",1);
 //        Chain.addBlock(y);
+//        System.out.println("hash in mine: "+Chain.getPreviousHash());
         Block x = new Block(Chain.getPreviousHash(),hash,data,String.valueOf(nonce));
 
-            String line = x.getPreviousHash()+","+x.getHash()+","+x.getTransactions()+","+x.getNonce();
+        String line = x.getPreviousHash()+","+x.getHash()+","+x.getTransactions()+","+x.getNonce();
 //            System.out.println(line);
-            Scanner s = new Scanner(line);
-            Chain.addEachBlock(s);
+        Scanner s = new Scanner(line);
+        Chain.createBlockFromLedger(s);
         long endTime = System.currentTimeMillis();
 
         long time = endTime - startTime;
         double i = (double) time;
-        System.out.println("That took " + (endTime - startTime) + " milliseconds"+"\nNumber of hashes tried: "+ nonce +"\ncalculations per second:   "+counter/(i/1000));
+        System.out.println("That took " + (endTime - startTime) + " milliseconds"+"\nNumber of hashes tried: "+ nonce +"\ncalculations per second:   "+counter/(i/1000)+"\nMined hash:  "+hash);
     }
     public String getHash() {
         return hash;

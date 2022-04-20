@@ -9,47 +9,33 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
 
-public class Chain {
-    private String previousHash, newHash, transactions;
-//    private static Block prospectiveBlock;
-    private int nonce;
+public final class Chain {
     private static ArrayList<Block> chain = new ArrayList<>();
-    public Chain(Block prospectiveBlock){
-
-//        this.prospectiveBlock = prospectiveBlock;
+    private Chain(){
     }
     public static void updateFromLedger(){
-
-
             try {
                 Scanner inputFile = new Scanner(new File("ledger.txt"));
                 while (inputFile.hasNextLine()) {
 
                     Scanner s = new Scanner(inputFile.nextLine());
-//                    System.out.println(s.nextLine());
-                    addEachBlock(s);
-
-//                   inputFile.nextLine();
-//                    counter++;
+                    createBlockFromLedger(s);
 
                 }
+
                 inputFile.close();
             } catch (FileNotFoundException ff) {
                 System.out.println("\n\n\n\n\nException " + ff);
             }
     }
-    public static void addEachBlock(Scanner s){
+    public static void createBlockFromLedger(Scanner s){
         s.useDelimiter(",");
 
         try {
-//            while (s.hasNext()) {
                 Block x = new Block(s.next(),s.next(),s.next(),s.next());
-                Chain.addBlock(x);
-//            System.out.println("this"+x.getNonce());
-                writeToLedger();
+                Chain.tryToAddBlockToChain(x);
 
-//            }
-        } catch (Exception e) {
+        } catch (IndexOutOfBoundsException e) {
             System.out.println("Exception   "+e);
         }
     }
@@ -67,26 +53,42 @@ public class Chain {
             System.out.println(e);
         }
     }
-    public static void addBlock(Block x){
+    public static void tryToAddBlockToChain(Block x){
         if(chain.size()<1){
             chain.add(x);
+            writeToLedger();
+
         }
-        else if (validate(x)) {
+//        chain.add(x);
+        else if (validateMinedBlock(x)) {
             chain.add(x);
+            writeToLedger();
+
         }
         else {
             System.out.println("Not a valid Block");
         }
     }
-    public static boolean validate(Block prospectiveBlock){
+    public static boolean validateMinedBlock(Block prospectiveBlock){
+        String preHash;
+        if (chain.size()<1){
+            preHash = "Genesis Block hash";
+        }else {
+//            System.out.println("I: "+chain.indexOf(prospectiveBlock));
+            preHash = chain.get(chain.size()-1).getHash();
 
-        return prospectiveBlock.getHash().equals(createHash(prospectiveBlock.getTransactions(), prospectiveBlock.getNonce()));
+        }
+//        System.out.println(preHash);
+//        System.out.println("preHash  "+  createHash(prospectiveBlock.getTransactions(), prospectiveBlock.getNonce(),prospectiveBlock.getPreviousHash()));
+//        System.out.println("thisHash  "+prospectiveBlock.getHash());
+
+        return prospectiveBlock.getHash().equals(createHash(prospectiveBlock.getTransactions(), prospectiveBlock.getNonce(),preHash));
     }
-    public static String createHash(String transactions, String nonce) {
+    public static String createHash(String transactions, String nonce,String previousHash) {
         String result = null;
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            String contents = transactions+nonce;
+            String contents = previousHash+transactions+nonce;
             byte[] hash = digest.digest(contents.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             for (byte b : hash) {
@@ -97,7 +99,6 @@ public class Chain {
             System.out.println(e);
         }
         return result;
-//        return result;
     }
 
     public ArrayList<Block> getChain() {
@@ -105,9 +106,14 @@ public class Chain {
     }
 
     public void setChain(ArrayList<Block> chain) {
-        this.chain = chain;
+        Chain.chain = chain;
     }
     public static String getPreviousHash(){
+        if (chain.size()<1){
+            return "Genesis Block hash";
+        }
+        else {
         return chain.get(chain.size()-1).getHash();
+        }
     }
 }
