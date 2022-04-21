@@ -13,7 +13,7 @@ public class Mine {
     private String data;
     private long comparableValueOfHash;
     private int nonce;
-    public Mine( String data){
+    public Mine(String data){
 //        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date = new Date();
         String timeStamp = String.valueOf(date);
@@ -52,7 +52,7 @@ public class Mine {
         BigInteger baseTwo = new BigInteger("2");
 
 //      Exponent that sets the difficulty of mining
-        int exponent = 240;
+        int exponent = 248;
 
 //      Number value of hash so that it can be mathematically compared
         BigInteger hashValue = new BigInteger(hash,16);
@@ -67,7 +67,7 @@ public class Mine {
             createHash();
             hashValue = new BigInteger(hash,16);
             comparableValueOfHash = hash.hashCode();
-//            System.out.println(hash);
+            System.out.println(hash);
         }
 
 //        Block y = new Block("this","that","thaitah",1);

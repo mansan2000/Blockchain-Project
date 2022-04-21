@@ -11,11 +11,13 @@ import java.util.Scanner;
 
 public final class Chain {
     private static ArrayList<Block> chain = new ArrayList<>();
+    private static final String ledgerFile = "ledgerCopy.csv";
     private Chain(){
     }
     public static void updateFromLedger(){
             try {
-                Scanner inputFile = new Scanner(new File("ledger.txt"));
+                Scanner inputFile = new Scanner(new File(ledgerFile));
+                inputFile.nextLine();
                 while (inputFile.hasNextLine()) {
 
                     Scanner s = new Scanner(inputFile.nextLine());
@@ -41,7 +43,8 @@ public final class Chain {
     }
     public static void writeToLedger(){
         try {
-            PrintWriter ledger = new PrintWriter("ledger.txt");
+            PrintWriter ledger = new PrintWriter(ledgerFile);
+            ledger.println("PREVIOUS HASH, CURRENT HASH, TRANSACTIONS, NONCE");
             for (Block x : chain) {
 //                System.out.println("nonce: "+x.getNonce());
                 ledger.println(x.getPreviousHash()+","+x.getHash()+","+x.getTransactions()+","+x.getNonce());
